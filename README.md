@@ -72,3 +72,8 @@ Anubhav Rajput is a Cybersecurity student at IILM University, Greater Noida. He 
   
  License
 This project is open source and free to use. If you use this as a template for your own portfolio, a credit or a star ⭐ on the repo would be appreciated!
+
+
+Phase  2 
+
+In this phase I am going to use my Xploit tool and integrate the tool to run my own capture the flag simulation , creating web vulnerability understanding and user education module
