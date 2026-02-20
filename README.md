@@ -70,8 +70,7 @@ Anubhav Rajput is a Cybersecurity student at IILM University, Greater Noida. He 
 - 🔗 [LinkedIn](https://linkedin.com/in/anubhav-rajput229367327/)
 - 📍 New Delhi, India.
   
- License
-This project is open source and free to use. If you use this as a template for your own portfolio, a credit or a star ⭐ on the repo would be appreciated!
+ -------
 
 
 Phase  2 
