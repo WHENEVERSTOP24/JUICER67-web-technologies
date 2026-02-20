@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XPLOIT // OPS</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:        #0b0b0b;
+  --bg2:       #111111;
+  --bg3:       #161616;
+  --gold:      #c9a84c;
+  --gold-dim:  #a8873a;
+  --gold-faint:rgba(201,168,76,0.08);
+  --gold-glow: rgba(201,168,76,0.18);
+  --cream:     #e8e2d4;
+  --cream-dim: #9a9080;
+  --cream-muted:#4a4540;
+  --red:       #c0392b;
+  --red-dim:   rgba(192,57,43,0.15);
+  --border:    #222222;
+  --border-gold:rgba(201,168,76,0.3);
+  --mono:      'Share Tech Mono', monospace;
+  --display:   'Bebas Neue', sans-serif;
+  --body:      'Barlow', sans-serif;
+  --cond:      'Barlow Condensed', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* Subtle grain texture */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:0; opacity:0.4;
+}
+
+/* ===================== TOP NAV ===================== */
+.topnav {
+  position: fixed;
+  top:0; left:0; right:0;
+  height: 56px;
+  background: rgba(11,11,11,0.97);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  z-index: 200;
+  backdrop-filter: blur(8px);
+}
+
+.nav-brand {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 4px;
+  color: var(--cream);
+  display: flex; align-items: center; gap: 6px;
+  margin-right: 60px;
+  white-space: nowrap;
+}
+.nav-brand span { color: var(--gold); }
+
+.nav-links {
+  display: flex;
+  gap: 40px;
+  flex: 1;
+}
+.nav-link {
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 6px;
+  color: var(--cream-dim);
+  cursor: pointer;
+  transition: color 0.18s;
+  text-transform: uppercase;
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+  transition: all 0.18s;
+}
+.nav-link:hover { color: var(--cream); }
+.nav-link.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.nav-right {
+  display: flex; align-items: center; gap: 20px;
+}
+.nav-status {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--cream-muted);
+  display: flex; align-items: center; gap: 6px;
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px var(--gold);
+  animation: blink 2s infinite;
+}
+.status-dot.live { background: #27ae60; box-shadow: 0 0 6px #27ae60; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.nav-toggle-wrap {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--cream-muted);
+}
+.tog {
+  width: 32px; height: 16px;
+  background: var(--border);
+  border-radius: 8px;
+  border: 1px solid #333;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.tog.on { background: var(--gold-dim); }
+.tog::after {
+  content:''; position:absolute;
+  width:10px; height:10px; background:#555;
+  border-radius:50%; top:2px; left:2px;
+  transition: left 0.2s, background 0.2s;
+}
+.tog.on::after { left:18px; background:#000; }
+
+/* ===================== MAIN ===================== */
+.main {
+  margin-top: 56px;
+  position: relative;
+  z-index: 1;
+}
+
+.view { display:none; animation: vFade 0.25s ease; }
+.view.active { display:block; }
+@keyframes vFade { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===================== PAGE HEADER ===================== */
+.page-top {
+  padding: 40px 60px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+.classified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--gold);
+  padding: 4px 14px;
+  margin-bottom: 18px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 6px;
+  color: var(--gold);
+}
+.classified-badge::before {
+  content:'';
+  width:6px; height:6px; border-radius:50%;
+  background:var(--gold); box-shadow: 0 0 6px var(--gold);
+  animation: blink 2s infinite;
+}
+.page-title {
+  font-family: var(--display);
+  font-size: 72px;
+  line-height: 0.9;
+  color: var(--cream);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.page-title span { color: var(--gold); }
+.page-sub {
+  font-family: var(--cond);
+  font-size: 12px;
+  letter-spacing: 8px;
+  color: var(--cream-dim);
+  padding-bottom: 28px;
+}
+
+/* ===================== CONTENT AREA ===================== */
+.content { padding: 0 60px 60px; }
+
+/* ===================== STATS ===================== */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-bottom: 40px;
+}
+.stat-box {
+  background: var(--bg);
+  padding: 24px 28px;
+  position: relative;
+}
+.stat-box::after {
+  content:'';
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:2px;
+  background:var(--gold);
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.stat-box:hover::after { opacity:0.4; }
+.stat-lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--cream-muted);
+  margin-bottom: 10px;
+}
+.stat-num {
+  font-family: var(--display);
+  font-size: 42px;
+  color: var(--cream);
+  line-height: 1;
+}
+.stat-num.gold { color: var(--gold); }
+.stat-num.red { color: var(--red); }
+.stat-sub { font-family: var(--mono); font-size: 9px; color: var(--cream-muted); letter-spacing: 2px; margin-top:4px; }
+
+/* ===================== QUICK SCAN ===================== */
+.qs-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 28px 32px;
+  margin-bottom: 30px;
+  position: relative;
+  overflow:hidden;
+}
+.qs-wrap::before {
+  content:'';
+  position:absolute; top:0; left:0;
+  width:3px; height:100%;
+  background: var(--gold);
+}
+.qs-title {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: var(--cream);
+  margin-bottom: 4px;
+}
+.qs-sub { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; color: var(--cream-muted); margin-bottom: 20px; }
+.qs-row { display:flex; gap:12px; }
+.qs-inp {
+  flex:1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-bottom: 1px solid #333;
+  padding: 12px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--cream);
+  letter-spacing: 1px;
+  outline: none;
+  transition: border 0.18s;
+}
+.qs-inp:focus { border-color: var(--gold-dim); }
+.qs-inp::placeholder { color: var(--cream-muted); }
+.qs-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  padding: 12px 28px;
+  font-family: var(--cond);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+.qs-btn::before {
+  content:'';
+  position:absolute; inset:0;
+  background:var(--gold);
+  transform:scaleX(0); transform-origin:left;
+  transition:transform 0.25s;
+  z-index:-1;
+}
+.qs-btn:hover { color:#000; }
+.qs-btn:hover::before { transform:scaleX(1); }
+.qs-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.qs-btn:disabled::before { display:none; }
+.qs-btn:disabled:hover { color:var(--gold); }
+.qs-opts {
+  display:flex; gap:20px; margin-top:14px; flex-wrap:wrap;
+}
+.qs-opt {
+  display:flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:10px; letter-spacing:2px;
+  color:var(--cream-muted); cursor:pointer;
+}
+.qs-opt input[type=checkbox] { accent-color:var(--gold); }
+.qs-opt:hover { color:var(--cream-dim); }
+
+/* ===================== SECTION HEADER ===================== */
+.sec-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px; padding-bottom:10px;
+  border-bottom:1px solid var(--border);
+}
+.sec-title {
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: var(--cream-dim);
+  text-transform: uppercase;
+}
+.sec-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  cursor: pointer;
+  border: 1px solid var(--gold-dim);
+  padding: 3px 10px;
+  transition: all 0.15s;
+}
+.sec-tag:hover { background:var(--gold-faint); }
+
+/* ===================== FEATURE CARDS ===================== */
+.feat-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  margin-bottom:30px;
+}
+.feat-card {
+  background:var(--bg);
+  padding:32px 28px;
+  cursor:pointer;
+  transition:background 0.18s;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:14px; text-align:center;
+  min-height:160px;
+  position:relative;
+  overflow:hidden;
+}
+.feat-card::after {
+  content:'';
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:2px;
+  background:var(--gold);
+  transform:scaleX(0);
+  transition:transform 0.25s;
+}
+.feat-card:hover { background:var(--bg2); }
+.feat-card:hover::after { transform:scaleX(1); }
+.feat-card.red::after { background:var(--red); }
+.feat-icon { font-size:30px; opacity:0.5; transition:opacity 0.2s; }
+.feat-card:hover .feat-icon { opacity:0.9; }
+.feat-lbl {
+  font-family:var(--mono);
+  font-size:10px; letter-spacing:3px;
+  color:var(--cream-muted);
+  transition:color 0.18s;
+  text-transform:uppercase;
+}
+.feat-card:hover .feat-lbl { color:var(--cream-dim); }
+
+/* ===================== RECENT TABLE ===================== */
+.recent-wrap { }
+.scan-row {
+  display:flex; align-items:center; gap:16px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+  animation:rowIn 0.2s ease;
+}
+@keyframes rowIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+.scan-row:last-child { border-bottom:none; }
+.scan-num { font-family:var(--mono); font-size:10px; color:var(--cream-muted); width:24px; }
+.scan-tgt {
+  font-family:var(--mono); font-size:12px;
+  color:var(--cream); flex:1;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.scan-time { font-family:var(--mono); font-size:10px; color:var(--cream-muted); white-space:nowrap; }
+.sev-tag {
+  font-family:var(--cond); font-size:9px; font-weight:700;
+  letter-spacing:3px; padding:3px 10px;
+  white-space:nowrap;
+}
+.st-crit { background:var(--red-dim); color:var(--red); border:1px solid rgba(192,57,43,0.3); }
+.st-high { background:rgba(230,126,34,0.1); color:#e67e22; border:1px solid rgba(230,126,34,0.3); }
+.st-med { background:var(--gold-faint); color:var(--gold); border:1px solid var(--border-gold); }
+.st-low { background:rgba(39,174,96,0.08); color:#27ae60; border:1px solid rgba(39,174,96,0.2); }
+
+.empty-msg { font-family:var(--mono); font-size:11px; letter-spacing:3px; color:var(--cream-muted); padding:30px 0; }
+
+/* ===================== SCANNER VIEW ===================== */
+.scanner-layout {
+  display:grid; grid-template-columns:1fr 300px; gap:30px;
+}
+
+.prog-wrap {
+  background:var(--bg2); border:1px solid var(--border);
+  padding:18px 22px; margin-bottom:20px;
+}
+.prog-head { display:flex; justify-content:space-between; margin-bottom:10px; }
+.prog-lbl { font-family:var(--mono); font-size:10px; letter-spacing:3px; color:var(--cream-dim); }
+.prog-pct { font-family:var(--display); font-size:18px; color:var(--gold); }
+.prog-bar-bg { background:#1a1a1a; height:3px; }
+.prog-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s ease; }
+.prog-steps { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.prog-step {
+  font-family:var(--mono); font-size:9px; letter-spacing:3px;
+  padding:3px 10px; border:1px solid #222;
+  color:var(--cream-muted); transition:all 0.2s;
+}
+.prog-step.done { color:var(--gold); border-color:var(--gold-dim); background:var(--gold-faint); }
+.prog-step.run { color:var(--cream); border-color:#444; animation:stepBlink 1s infinite; }
+@keyframes stepBlink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Terminal */
+.term-card {
+  background:#080808;
+  border:1px solid var(--border);
+}
+.term-bar {
+  background:#111; padding:9px 14px;
+  display:flex; align-items:center; gap:6px;
+  border-bottom:1px solid var(--border);
+}
+.td { width:9px; height:9px; border-radius:50%; }
+.td-r{background:#ff5f57} .td-y{background:#ffbd2e} .td-g{background:#28c840}
+.term-title { margin-left:8px; font-family:var(--mono); font-size:10px; letter-spacing:3px; color:var(--cream-muted); }
+.term-clear {
+  margin-left:auto;
+  background:transparent; border:1px solid #333;
+  font-family:var(--mono); font-size:9px; letter-spacing:2px;
+  color:var(--cream-muted); padding:3px 10px; cursor:pointer; transition:all 0.15s;
+}
+.term-clear:hover { border-color:var(--gold-dim); color:var(--gold); }
+.term-out {
+  padding:16px; font-family:var(--mono); font-size:11px; line-height:1.9;
+  height:360px; overflow-y:auto;
+  scrollbar-width:thin; scrollbar-color:#222 transparent;
+}
+.tl { display:block; animation:tlIn 0.12s ease; }
+@keyframes tlIn { from{opacity:0;transform:translateX(-3px)} to{opacity:1;transform:translateX(0)} }
+.tl-ok  { color:var(--gold); }
+.tl-err { color:var(--red); }
+.tl-warn{ color:#e67e22; }
+.tl-info{ color:var(--cream-muted); }
+.tl-data{ color:var(--cream-dim); }
+.tl-port{ color:#7f8c8d; }
+.tl-w   { color:var(--cream); }
+.tl-hi  { color:#c0392b; }
+
+/* Side panel */
+.side-panel { margin-bottom:20px; }
+.side-sec {
+  background:var(--bg2); border:1px solid var(--border);
+  margin-bottom:1px;
+}
+.side-hdr {
+  padding:10px 14px;
+  background:#111;
+  font-family:var(--cond); font-size:10px; font-weight:700;
+  letter-spacing:5px; color:var(--cream-muted);
+  border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.side-body { padding:12px; }
+.vc {
+  padding:8px 10px;
+  border-left:2px solid #333;
+  margin-bottom:6px;
+  background:rgba(255,255,255,0.02);
+  animation:rowIn 0.2s ease;
+}
+.vc.crit { border-left-color:var(--red); }
+.vc.high { border-left-color:#e67e22; }
+.vc.med  { border-left-color:var(--gold); }
+.vc.low  { border-left-color:#27ae60; }
+.vc-name { font-family:var(--mono); font-size:10px; color:var(--cream-dim); margin-bottom:3px; }
+.vc-row  { display:flex; gap:8px; align-items:center; }
+.vc-sev  { font-family:var(--cond); font-size:8px; font-weight:700; letter-spacing:2px; }
+.sc-crit{color:var(--red)} .sc-high{color:#e67e22} .sc-med{color:var(--gold)} .sc-low{color:#27ae60}
+.vc-cve  { font-family:var(--mono); font-size:9px; color:var(--cream-muted); }
+
+.port-tbl { width:100%; border-collapse:collapse; }
+.port-tbl th { font-family:var(--cond); font-size:9px; font-weight:700; letter-spacing:3px; color:var(--cream-muted); text-align:left; padding:5px 6px; border-bottom:1px solid var(--border); }
+.port-tbl td { font-family:var(--mono); font-size:10px; padding:5px 6px; border-bottom:1px solid rgba(34,34,34,0.6); }
+.p-open { color:var(--gold); }
+.p-closed { color:var(--cream-muted); }
+.p-svc { color:var(--cream-dim); }
+
+/* ===================== VULNERABILITIES ===================== */
+.filter-row { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.fbtn {
+  font-family:var(--cond); font-size:10px; font-weight:700; letter-spacing:4px;
+  padding:5px 14px; border:1px solid var(--border); background:transparent;
+  color:var(--cream-muted); cursor:pointer; transition:all 0.15s; text-transform:uppercase;
+}
+.fbtn:hover { border-color:#444; color:var(--cream-dim); }
+.fbtn.active { border-color:var(--gold); color:var(--gold); background:var(--gold-faint); }
+
+.vf-item {
+  background:var(--bg2); border:1px solid var(--border);
+  padding:16px 20px; margin-bottom:8px;
+  display:flex; gap:16px; align-items:flex-start;
+  transition:border-color 0.15s; animation:rowIn 0.2s ease;
+}
+.vf-item:hover { border-color:#333; }
+.vf-bar { width:2px; align-self:stretch; flex-shrink:0; }
+.vb-crit{background:var(--red)} .vb-high{background:#e67e22} .vb-med{background:var(--gold)} .vb-low{background:#27ae60}
+.vf-name { font-family:var(--cond); font-size:14px; font-weight:700; letter-spacing:1px; color:var(--cream); margin-bottom:5px; }
+.vf-desc { font-family:var(--body); font-size:12px; color:var(--cream-dim); line-height:1.6; margin-bottom:8px; }
+.vf-meta { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.vf-sev  { font-family:var(--cond); font-size:9px; font-weight:700; letter-spacing:3px; padding:2px 8px; }
+.vfs-crit{background:var(--red-dim);color:var(--red);border:1px solid rgba(192,57,43,0.3)}
+.vfs-high{background:rgba(230,126,34,0.1);color:#e67e22;border:1px solid rgba(230,126,34,0.3)}
+.vfs-med {background:var(--gold-faint);color:var(--gold);border:1px solid var(--border-gold)}
+.vfs-low {background:rgba(39,174,96,0.08);color:#27ae60;border:1px solid rgba(39,174,96,0.2)}
+.vf-tgt  { font-family:var(--mono); font-size:9px; color:var(--cream-muted); border:1px solid #222; padding:2px 8px; }
+
+/* ===================== PORT SCAN ===================== */
+.port-layout { display:grid; grid-template-columns:1fr 220px; gap:30px; }
+.big-tbl { width:100%; border-collapse:collapse; }
+.big-tbl th { font-family:var(--cond); font-size:10px; font-weight:700; letter-spacing:4px; text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); color:var(--cream-muted); background:var(--bg2); }
+.big-tbl td { font-family:var(--mono); font-size:11px; padding:10px 12px; border-bottom:1px solid rgba(34,34,34,0.6); }
+.big-tbl tr:hover td { background:var(--gold-faint); }
+
+.stat-mini { display:flex; flex-direction:column; gap:0; }
+.sm-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  font-family:var(--mono); font-size:10px;
+}
+.sm-row:last-child { border-bottom:none; }
+.sm-lbl { letter-spacing:2px; color:var(--cream-muted); }
+.sm-val { color:var(--cream); font-family:var(--display); font-size:18px; }
+.sm-val.gold { color:var(--gold); }
+
+/* ===================== CTF LAB ===================== */
+.ctf-layout { display:grid; grid-template-columns:260px 1fr; gap:30px; min-height:calc(100vh - 200px); }
+
+.ctf-left { display:flex; flex-direction:column; gap:20px; }
+
+.ch-item {
+  padding:14px 16px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-left:3px solid var(--border);
+  cursor:pointer;
+  transition:all 0.15s;
+  animation:rowIn 0.2s ease;
+}
+.ch-item:hover { border-color:#333; }
+.ch-item.active { border-color:var(--border-gold); border-left-color:var(--gold); background:var(--gold-faint); }
+.ch-item.solved { opacity:0.5; }
+.ch-name { font-family:var(--display); font-size:16px; letter-spacing:3px; color:var(--cream); margin-bottom:4px; }
+.ch-desc { font-family:var(--body); font-size:11px; color:var(--cream-muted); line-height:1.5; margin-bottom:10px; }
+.ch-meta { display:flex; gap:8px; align-items:center; }
+.diff { font-family:var(--cond); font-size:9px; font-weight:700; letter-spacing:3px; padding:2px 8px; }
+.d-e { background:rgba(39,174,96,0.1); color:#27ae60; border:1px solid rgba(39,174,96,0.3); }
+.d-m { background:var(--gold-faint); color:var(--gold); border:1px solid var(--border-gold); }
+.d-h { background:var(--red-dim); color:var(--red); border:1px solid rgba(192,57,43,0.3); }
+.ch-pts { font-family:var(--mono); font-size:10px; color:var(--cream-muted); margin-left:auto; letter-spacing:2px; }
+.ch-solved-lbl { font-family:var(--mono); font-size:10px; color:var(--gold); margin-left:auto; letter-spacing:2px; }
+
+.session-box {
+  background:var(--bg2); border:1px solid var(--border);
+}
+
+.ctf-right { display:flex; flex-direction:column; gap:16px; }
+
+.ctf-term {
+  background:#080808; border:1px solid var(--border); flex:1;
+}
+#ctf-out {
+  padding:16px; font-family:var(--mono); font-size:11px; line-height:1.9;
+  height:380px; overflow-y:auto;
+  scrollbar-width:thin; scrollbar-color:#222 transparent;
+}
+
+.ctf-ctrl {
+  background:var(--bg2); border:1px solid var(--border); padding:18px 20px;
+  display:flex; flex-direction:column; gap:12px;
+}
+.ctrl-lbl { font-family:var(--cond); font-size:10px; font-weight:700; letter-spacing:5px; color:var(--cream-muted); }
+.flag-row { display:flex; gap:10px; }
+.flag-inp {
+  flex:1;
+  background:var(--bg); border:1px solid var(--border); border-bottom:1px solid #333;
+  padding:10px 14px; font-family:var(--mono); font-size:11px;
+  color:var(--gold); letter-spacing:2px; outline:none; transition:border 0.18s;
+}
+.flag-inp:focus { border-color:var(--gold-dim); }
+.flag-inp::placeholder { color:var(--cream-muted); font-size:10px; letter-spacing:1px; }
+.flag-btn {
+  background:transparent; border:1px solid var(--gold);
+  font-family:var(--cond); font-size:11px; font-weight:700; letter-spacing:4px;
+  color:var(--gold); padding:10px 18px; cursor:pointer; transition:all 0.18s; white-space:nowrap;
+}
+.flag-btn:hover { background:var(--gold); color:#000; }
+
+.cmd-row { display:flex; align-items:center; gap:10px; }
+.cmd-prompt { font-family:var(--mono); font-size:11px; color:var(--gold); white-space:nowrap; }
+.cmd-inp {
+  flex:1; background:transparent; border:none;
+  border-bottom:1px solid var(--border);
+  font-family:var(--mono); font-size:11px; color:var(--cream);
+  padding:4px 8px; outline:none; letter-spacing:1px; transition:border 0.18s;
+}
+.cmd-inp:focus { border-bottom-color:var(--gold-dim); }
+.cmd-inp::placeholder { color:var(--cream-muted); }
+.cmd-btn {
+  background:transparent; border:1px solid var(--border);
+  font-family:var(--mono); font-size:9px; letter-spacing:2px;
+  color:var(--cream-muted); padding:4px 12px; cursor:pointer; transition:all 0.15s;
+}
+.cmd-btn:hover { border-color:#444; color:var(--cream-dim); }
+
+/* ===================== CONSOLE ===================== */
+.console-outer { background:#080808; border:1px solid var(--border); }
+#cons-out {
+  padding:20px; font-family:var(--mono); font-size:12px; line-height:1.9;
+  height:calc(100vh - 220px); overflow-y:auto;
+  scrollbar-width:thin; scrollbar-color:#222 transparent;
+}
+.cons-bar {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 20px; border-top:1px solid var(--border); background:#0f0f0f;
+}
+.cons-prompt { font-family:var(--mono); font-size:12px; color:var(--gold); white-space:nowrap; }
+.cons-inp {
+  flex:1; background:transparent; border:none;
+  font-family:var(--mono); font-size:12px; color:#fff; outline:none; letter-spacing:1px;
+}
+.cons-inp::placeholder { color:var(--cream-muted); }
+.cons-send {
+  background:transparent; border:1px solid #333;
+  font-family:var(--cond); font-size:10px; font-weight:700; letter-spacing:3px;
+  color:var(--cream-muted); padding:5px 14px; cursor:pointer; transition:all 0.15s;
+}
+.cons-send:hover { border-color:var(--gold-dim); color:var(--gold); }
+
+/* ===================== NOTIFICATIONS ===================== */
+.notif {
+  position:fixed; top:70px; right:20px;
+  background:var(--bg2); border:1px solid var(--gold);
+  font-family:var(--mono); font-size:10px; letter-spacing:2px;
+  color:var(--gold); padding:10px 16px; z-index:9999;
+  animation:notifIn 0.2s ease; max-width:300px;
+}
+.notif.err { border-color:var(--red); color:var(--red); }
+.notif.ok  { border-color:#27ae60; color:#27ae60; }
+@keyframes notifIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
+
+.score-pop {
+  position:fixed;
+  font-family:var(--display); font-size:28px; color:var(--gold);
+  pointer-events:none; z-index:9998;
+  animation:spop 1.5s ease forwards;
+}
+@keyframes spop { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-80px) scale(1.5)} }
+
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#222; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="nav-brand">XPLOIT <span>&nbsp;//&nbsp;</span> OPS</div>
+  <div class="nav-links">
+    <div class="nav-link active" onclick="nav('dashboard',this)">DASHBOARD</div>
+    <div class="nav-link" onclick="nav('scanner',this)">SCANNER</div>
+    <div class="nav-link" onclick="nav('vulnerabilities',this)">VULNERABILITIES</div>
+    <div class="nav-link" onclick="nav('portscan',this)">PORT SCAN</div>
+    <div class="nav-link" onclick="nav('database',this)">DATABASE</div>
+    <div class="nav-link" onclick="nav('ctflab',this)">CTF LAB</div>
+    <div class="nav-link" onclick="nav('console',this)">CONSOLE</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status">
+      <div class="status-dot" id="api-dot"></div>
+      <span id="api-lbl">SIM MODE</span>
+    </div>
+    <div class="nav-toggle-wrap">
+      <div class="tog" id="api-tog" onclick="toggleApi()"></div>
+      <span>LIVE API</span>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="page-top">
+      <div class="classified-badge">CLASSIFIED -- OPERATOR PLATFORM</div>
+      <div class="page-title">XPLOIT<br><span>DASHBOARD</span></div>
+      <div class="page-sub">WEB VULNERABILITY TESTING PLATFORM</div>
+    </div>
+    <div class="content">
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-lbl">// TOTAL SCANS</div>
+          <div class="stat-num" id="s-scans">0</div>
+          <div class="stat-sub">ALL TIME</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-lbl">// VULNERABILITIES</div>
+          <div class="stat-num red" id="s-vulns">0</div>
+          <div class="stat-sub">DETECTED</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-lbl">// OPEN PORTS</div>
+          <div class="stat-num gold" id="s-ports">0</div>
+          <div class="stat-sub">DISCOVERED</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-lbl">// CTF SCORE</div>
+          <div class="stat-num gold" id="s-ctf">0</div>
+          <div class="stat-sub">PTS EARNED</div>
+        </div>
+      </div>
+
+      <div class="qs-wrap">
+        <div class="qs-title">QUICK SCAN</div>
+        <div class="qs-sub">// START A VULNERABILITY SCAN ON A TARGET URL</div>
+        <div class="qs-row">
+          <input class="qs-inp" id="dash-url" placeholder="https://example.com" onkeydown="if(event.key==='Enter')quickScan()"/>
+          <button class="qs-btn" onclick="quickScan()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            SCAN
+          </button>
+        </div>
+        <div class="qs-opts">
+          <label class="qs-opt"><input type="checkbox" id="d-ports" checked> PORT SCAN</label>
+          <label class="qs-opt"><input type="checkbox" id="d-vulns" checked> VULN DETECT</label>
+          <label class="qs-opt"><input type="checkbox" id="d-os"> OS FINGERPRINT</label>
+          <label class="qs-opt"><input type="checkbox" id="d-banner"> BANNER GRAB</label>
+        </div>
+      </div>
+
+      <div class="feat-grid">
+        <div class="feat-card" onclick="nav('vulnerabilities',document.querySelectorAll('.nav-link')[2])">
+          <div class="feat-icon">🛡️</div>
+          <div class="feat-lbl">FIND COMMON WEB VULNERABILITIES</div>
+        </div>
+        <div class="feat-card" onclick="nav('portscan',document.querySelectorAll('.nav-link')[3])">
+          <div class="feat-icon">🔌</div>
+          <div class="feat-lbl">DISCOVER OPEN PORTS ON TARGET</div>
+        </div>
+        <div class="feat-card red" onclick="nav('database',document.querySelectorAll('.nav-link')[4])">
+          <div class="feat-icon">🗄️</div>
+          <div class="feat-lbl">VIEW PREVIOUS SCAN RESULTS</div>
+        </div>
+      </div>
+
+      <div class="sec-header">
+        <div class="sec-title">// RECENT ACTIVITY</div>
+        <div class="sec-tag" onclick="nav('scanner',document.querySelectorAll('.nav-link')[1])">+ NEW SCAN</div>
+      </div>
+      <div id="recent-list"><div class="empty-msg">// NO RECENT SCANS FOUND</div></div>
+    </div>
+  </div>
+
+  <!-- SCANNER -->
+  <div class="view" id="view-scanner">
+    <div class="page-top">
+      <div class="classified-badge">ACTIVE -- SCAN ENGINE</div>
+      <div class="page-title">SCAN<span>NER</span></div>
+      <div class="page-sub">RUN VULNERABILITY AND PORT SCANS ON TARGETS</div>
+    </div>
+    <div class="content">
+      <div class="qs-wrap" style="margin-bottom:20px">
+        <div class="qs-row">
+          <input class="qs-inp" id="scan-url" placeholder="https://example.com or 192.168.x.x"/>
+          <button class="qs-btn" id="scan-btn" onclick="runScan()">LAUNCH SCAN</button>
+        </div>
+        <div class="qs-opts">
+          <label class="qs-opt"><input type="checkbox" id="sc-ports" checked> PORT SCAN</label>
+          <label class="qs-opt"><input type="checkbox" id="sc-vulns" checked> VULN DETECT</label>
+          <label class="qs-opt"><input type="checkbox" id="sc-os"> OS FINGERPRINT</label>
+          <label class="qs-opt"><input type="checkbox" id="sc-banner"> BANNER GRAB</label>
+        </div>
+      </div>
+
+      <div id="prog-panel" style="display:none;margin-bottom:20px">
+        <div class="prog-wrap">
+          <div class="prog-head">
+            <div class="prog-lbl">// SCANNING TARGET</div>
+            <div class="prog-pct" id="prog-pct">0%</div>
+          </div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill"></div></div>
+          <div class="prog-steps">
+            <span class="prog-step" id="ps-init">INIT</span>
+            <span class="prog-step" id="ps-recon">RECON</span>
+            <span class="prog-step" id="ps-ports">PORTS</span>
+            <span class="prog-step" id="ps-vulns">VULNS</span>
+            <span class="prog-step" id="ps-report">REPORT</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scanner-layout">
+        <div>
+          <div class="term-card">
+            <div class="term-bar">
+              <div class="td td-r"></div><div class="td td-y"></div><div class="td td-g"></div>
+              <div class="term-title">XPLOIT // SCAN OUTPUT</div>
+              <button class="term-clear" onclick="clearT('scan-out')">CLEAR</button>
+            </div>
+            <div class="term-out" id="scan-out">
+              <span class="tl tl-ok">// XPLOIT scanner ready.</span>
+              <span class="tl tl-info">// Enter a target and click LAUNCH SCAN to begin.</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="side-sec" style="margin-bottom:1px">
+            <div class="side-hdr">// OPEN PORTS<span id="port-count" style="font-size:9px;color:var(--gold)">0</span></div>
+            <div class="side-body" id="sc-ports-list"><div style="font-family:var(--mono);font-size:10px;color:var(--cream-muted)">// Run scan first</div></div>
+          </div>
+          <div class="side-sec">
+            <div class="side-hdr">// VULNERABILITIES<span id="vuln-count" style="font-size:9px;color:var(--red)">0</span></div>
+            <div class="side-body" id="sc-vulns-list"><div style="font-family:var(--mono);font-size:10px;color:var(--cream-muted)">// Run scan first</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VULNERABILITIES -->
+  <div class="view" id="view-vulnerabilities">
+    <div class="page-top">
+      <div class="classified-badge">THREAT ASSESSMENT -- ALL TARGETS</div>
+      <div class="page-title">VULNER<span>ABILITIES</span></div>
+      <div class="page-sub">ALL DETECTED VULNERABILITIES ACROSS SCANS</div>
+    </div>
+    <div class="content">
+      <div class="filter-row">
+        <button class="fbtn active" onclick="filterV('all',this)">ALL</button>
+        <button class="fbtn" onclick="filterV('CRITICAL',this)" style="color:var(--red)">CRITICAL</button>
+        <button class="fbtn" onclick="filterV('HIGH',this)" style="color:#e67e22">HIGH</button>
+        <button class="fbtn" onclick="filterV('MEDIUM',this)" style="color:var(--gold)">MEDIUM</button>
+        <button class="fbtn" onclick="filterV('LOW',this)" style="color:#27ae60">LOW</button>
+      </div>
+      <div id="vuln-list"><div class="empty-msg">// NO VULNERABILITIES DETECTED YET. RUN A SCAN FIRST.</div></div>
+    </div>
+  </div>
+
+  <!-- PORT SCAN -->
+  <div class="view" id="view-portscan">
+    <div class="page-top">
+      <div class="classified-badge">RECON -- PORT DISCOVERY</div>
+      <div class="page-title">PORT<span> SCAN</span></div>
+      <div class="page-sub">DISCOVER OPEN PORTS AND RUNNING SERVICES</div>
+    </div>
+    <div class="content">
+      <div class="qs-wrap" style="margin-bottom:24px">
+        <div class="qs-row">
+          <input class="qs-inp" id="port-url" placeholder="192.168.x.x or domain.com"/>
+          <button class="qs-btn" onclick="portOnly()">SCAN PORTS</button>
+        </div>
+      </div>
+      <div class="port-layout">
+        <div>
+          <div class="sec-header">
+            <div class="sec-title">// PORT RESULTS</div>
+            <div class="sec-tag" id="port-tag">0 PORTS FOUND</div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="big-tbl">
+              <thead><tr><th>PORT</th><th>STATE</th><th>SERVICE</th><th>VERSION</th></tr></thead>
+              <tbody id="port-tbody"><tr><td colspan="4" style="font-family:var(--mono);color:var(--cream-muted);padding:24px;font-size:10px;letter-spacing:2px">// RUN A SCAN TO SEE PORT RESULTS</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="sec-header"><div class="sec-title">// STATS</div></div>
+          <div class="session-box">
+            <div class="stat-mini">
+              <div class="sm-row"><span class="sm-lbl">TOTAL</span><span class="sm-val" id="ps-tot">0</span></div>
+              <div class="sm-row"><span class="sm-lbl">OPEN</span><span class="sm-val gold" id="ps-open">0</span></div>
+              <div class="sm-row"><span class="sm-lbl">CLOSED</span><span class="sm-val" style="color:var(--cream-muted);font-size:14px" id="ps-closed">0</span></div>
+              <div class="sm-row"><span class="sm-lbl">OS</span><span style="font-family:var(--mono);font-size:10px;color:var(--cream-muted)" id="ps-os">--</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATABASE -->
+  <div class="view" id="view-database">
+    <div class="page-top">
+      <div class="classified-badge">ARCHIVE -- SCAN HISTORY</div>
+      <div class="page-title">DATA<span>BASE</span></div>
+      <div class="page-sub">PREVIOUS SCAN RESULTS ARCHIVE</div>
+    </div>
+    <div class="content">
+      <div class="sec-header">
+        <div class="sec-title">// SCAN RECORDS</div>
+        <div class="sec-tag" id="db-tag">0 RECORDS</div>
+      </div>
+      <div id="db-list"><div class="empty-msg">// NO SCAN RECORDS. RUN A SCAN TO POPULATE THE DATABASE.</div></div>
+    </div>
+  </div>
+
+  <!-- CTF LAB -->
+  <div class="view" id="view-ctflab">
+    <div class="page-top">
+      <div class="classified-badge">SIMULATION -- ETHICAL HACKING LAB</div>
+      <div class="page-title">CTF<span> LAB</span></div>
+      <div class="page-sub">XPLOIT ENGINE ACTIVE -- PRACTICE ENVIRONMENT</div>
+    </div>
+    <div class="content">
+      <div class="ctf-layout">
+        <div class="ctf-left">
+          <div>
+            <div class="sec-header">
+              <div class="sec-title">// CHALLENGES</div>
+              <div class="sec-tag" id="ctf-prog">0 / 3</div>
+            </div>
+            <div class="ch-item active" id="ch-0" onclick="selCh(0)">
+              <div class="ch-name">TARGET-ALPHA</div>
+              <div class="ch-desc">Exposed Apache server with outdated modules. Find the hidden admin endpoint.</div>
+              <div class="ch-meta"><span class="diff d-e">EASY</span><span class="ch-pts">100 PTS</span></div>
+            </div>
+            <div class="ch-item" id="ch-1" onclick="selCh(1)">
+              <div class="ch-name">SHADOW-NODE</div>
+              <div class="ch-desc">Misconfigured SSH daemon and exposed databases. Find the vulnerability chain.</div>
+              <div class="ch-meta"><span class="diff d-m">MEDIUM</span><span class="ch-pts">250 PTS</span></div>
+            </div>
+            <div class="ch-item" id="ch-2" onclick="selCh(2)">
+              <div class="ch-name">GHOST-WEB</div>
+              <div class="ch-desc">E-commerce platform riddled with XSS and SQL injection vectors.</div>
+              <div class="ch-meta"><span class="diff d-h">HARD</span><span class="ch-pts">500 PTS</span></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="sec-header"><div class="sec-title">// SESSION</div></div>
+            <div class="session-box">
+              <div class="stat-mini">
+                <div class="sm-row"><span class="sm-lbl">SCORE</span><span class="sm-val gold" id="ctf-score">0</span></div>
+                <div class="sm-row"><span class="sm-lbl">FLAGS</span><span class="sm-val gold" id="ctf-flags" style="font-size:16px">0/3</span></div>
+                <div class="sm-row"><span class="sm-lbl">VULNS</span><span style="font-family:var(--mono);color:var(--cream-dim)" id="ctf-vulns">0</span></div>
+                <div class="sm-row"><span class="sm-lbl">TARGET</span><span style="font-family:var(--mono);font-size:10px;color:var(--cream-muted)" id="ctf-tgt">--</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="sec-header"><div class="sec-title">// INTEL HINT</div></div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--cream-muted);line-height:1.8;padding:14px 0;border-bottom:1px solid var(--border)" id="ctf-hint">// SELECT A CHALLENGE TO REVEAL CLASSIFIED INTEL.</div>
+          </div>
+        </div>
+
+        <div class="ctf-right">
+          <div class="ctf-term">
+            <div class="term-bar">
+              <div class="td td-r"></div><div class="td td-y"></div><div class="td td-g"></div>
+              <div class="term-title">XPLOIT // CTF SIMULATION</div>
+              <button class="term-clear" onclick="clearT('ctf-out')" style="margin-right:8px">CLEAR</button>
+              <button onclick="launchCtf()" id="ctf-launch" style="background:transparent;border:1px solid var(--gold);font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);padding:3px 14px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='var(--gold)';this.style.color='#000'" onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">LAUNCH XPLOIT</button>
+            </div>
+            <div id="ctf-out">
+              <span class="tl tl-ok">// XPLOIT CTF Lab -- simulation environment loaded.</span>
+              <span class="tl tl-info">// Select a challenge and click LAUNCH XPLOIT to begin.</span>
+              <span class="tl tl-info">// Toggle Live API in top nav to connect your Flask backend.</span>
+            </div>
+          </div>
+
+          <div class="ctf-ctrl">
+            <div class="ctrl-lbl">// SUBMIT FLAG</div>
+            <div class="flag-row">
+              <input class="flag-inp" id="flag-inp" placeholder="XPLOIT{your_flag_here}" onkeydown="if(event.key==='Enter')subFlag()"/>
+              <button class="flag-btn" onclick="subFlag()">SUBMIT</button>
+            </div>
+            <div class="ctrl-lbl" style="margin-top:2px">// TERMINAL COMMAND</div>
+            <div class="cmd-row">
+              <span class="cmd-prompt">operator@xploit:~$</span>
+              <input class="cmd-inp" id="ctf-cmd" placeholder="help, hint, vulns, ports, score, challenges..." onkeydown="if(event.key==='Enter')execCtfCmd()"/>
+              <button class="cmd-btn" onclick="execCtfCmd()">EXEC</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONSOLE -->
+  <div class="view" id="view-console">
+    <div class="page-top">
+      <div class="classified-badge">DIRECT -- COMMAND INTERFACE</div>
+      <div class="page-title">CON<span>SOLE</span></div>
+      <div class="page-sub">XPLOIT OPERATOR TERMINAL</div>
+    </div>
+    <div class="content">
+      <div class="console-outer">
+        <div id="cons-out">
+          <span class="tl tl-ok">// Xploit Console v1.0.0 -- type 'help' for available commands</span>
+          <span class="tl tl-info">// Operator: Anubhav Rajput | Codename: XPLOIT | New Delhi, IN</span>
+          <span class="tl tl-info"> </span>
+        </div>
+        <div class="cons-bar">
+          <span class="cons-prompt">operator@xploit:~$</span>
+          <input class="cons-inp" id="cons-inp" placeholder="enter command..." onkeydown="consKey(event)"/>
+          <button class="cons-send" onclick="execCons()">EXECUTE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ================================================
+// STATE
+// ================================================
+const G = {
+  live:false, apiUrl:'http://localhost:5000',
+  scans:[], vulns:[], ports:[],
+  ctfScore:0, ctfFlags:0, ctfSolved:new Set(),
+  activeCh:0, ctfLastScan:null, scanning:false
+};
+
+// ================================================
+// CHALLENGES
+// ================================================
+const CH = [
+  {
+    name:'TARGET-ALPHA', target:'10.0.0.47', pts:100,
+    flag:'XPLOIT{4lph4_4dm1n_p4n3l_xp05ed}',
+    hint:'PORT 8080 IS ACTIVE. APACHE TOMCAT DEFAULT MANAGER IS OFTEN EXPOSED WITH DEFAULT CREDENTIALS.',
+    sim:{
+      ports:[
+        {port:22,state:'open',service:'SSH',version:'OpenSSH 7.2p2'},
+        {port:80,state:'open',service:'HTTP',version:'Apache 2.4.18'},
+        {port:443,state:'open',service:'HTTPS',version:'Apache 2.4.18'},
+        {port:8080,state:'open',service:'HTTP-ALT',version:'Apache Tomcat 6.0.18'},
+        {port:3306,state:'open',service:'MySQL',version:'MySQL 5.5.47'},
+        {port:21,state:'closed',service:'FTP',version:''},
+        {port:8443,state:'closed',service:'HTTPS-ALT',version:''},
+      ],
+      vulns:[
+        {name:'Apache Tomcat RCE',sev:'CRITICAL',cve:'CVE-2017-12617',desc:'PUT method enabled on Tomcat 6.x -- unrestricted file upload leads to RCE.'},
+        {name:'MySQL Default Credentials',sev:'HIGH',cve:'CVE-2012-2122',desc:'MySQL root accessible without password on port 3306.'},
+        {name:'Apache Outdated Version',sev:'MEDIUM',cve:'CVE-2016-0736',desc:'Apache 2.4.18 information disclosure vulnerability.'},
+        {name:'SSH Weak Cipher',sev:'LOW',cve:'N/A',desc:'arcfour cipher enabled in SSH daemon configuration.'},
+      ],
+      os:'Linux 3.16 (Ubuntu 16.04)',
+      intel:'NAVIGATE TO PORT 8080/MANAGER/HTML -- TOMCAT MANAGER EXPOSED WITH DEFAULT CREDS tomcat:tomcat'
+    }
+  },
+  {
+    name:'SHADOW-NODE', target:'10.0.0.88', pts:250,
+    flag:'XPLOIT{5h4d0w_ssh_priv_k3y_l34k}',
+    hint:'REDIS RUNNING WITHOUT AUTH. USE CONFIG SET DIR + DBFILENAME TO WRITE SSH KEY TO /ROOT/.SSH/AUTHORIZED_KEYS.',
+    sim:{
+      ports:[
+        {port:22,state:'open',service:'SSH',version:'OpenSSH 8.0'},
+        {port:80,state:'open',service:'HTTP',version:'nginx 1.14.0'},
+        {port:3000,state:'open',service:'Node.js',version:'Express 4.17'},
+        {port:9200,state:'open',service:'Elasticsearch',version:'6.8.0'},
+        {port:27017,state:'open',service:'MongoDB',version:'4.0.3'},
+        {port:6379,state:'open',service:'Redis',version:'5.0.3'},
+        {port:11211,state:'open',service:'Memcached',version:'1.5.6'},
+      ],
+      vulns:[
+        {name:'Elasticsearch No Auth',sev:'CRITICAL',cve:'CVE-2014-3120',desc:'Elasticsearch 6.8.0 fully accessible without authentication -- full data exposure.'},
+        {name:'MongoDB No Auth',sev:'CRITICAL',cve:'CVE-2013-4650',desc:'MongoDB listening on public interface without requireAuth enabled.'},
+        {name:'Redis Unprotected',sev:'HIGH',cve:'CVE-2015-4335',desc:'Redis running without requirepass -- arbitrary write to filesystem via CONFIG SET.'},
+        {name:'Memcached Amplification',sev:'MEDIUM',cve:'CVE-2018-1000115',desc:'UDP reflection DDoS amplification vector exposed on port 11211.'},
+      ],
+      os:'Linux 4.19 (Debian 10)',
+      intel:'REDIS CONFIG SET dir /root/.ssh && DBFILENAME authorized_keys && SET x [pubkey] && BGSAVE'
+    }
+  },
+  {
+    name:'GHOST-WEB', target:'10.0.0.132', pts:500,
+    flag:'XPLOIT{gh05t_xss_s3ss10n_h1j4ck3d}',
+    hint:'THE ?SEARCH= PARAMETER REFLECTS UNSANITIZED INPUT. CRAFT AN XSS PAYLOAD TO EXFILTRATE THE ADMIN SESSION COOKIE.',
+    sim:{
+      ports:[
+        {port:80,state:'open',service:'HTTP',version:'nginx 1.18.0'},
+        {port:443,state:'open',service:'HTTPS',version:'nginx 1.18.0 + TLS 1.2'},
+        {port:8443,state:'open',service:'Admin Panel',version:'PHP 7.2.24'},
+        {port:5432,state:'open',service:'PostgreSQL',version:'12.3'},
+        {port:25,state:'open',service:'SMTP',version:'Postfix 3.4.13'},
+        {port:110,state:'closed',service:'POP3',version:''},
+        {port:143,state:'closed',service:'IMAP',version:''},
+      ],
+      vulns:[
+        {name:'Reflected XSS',sev:'CRITICAL',cve:'CWE-79',desc:'?search= parameter reflects unescaped user input -- full session hijack possible.'},
+        {name:'SQL Injection',sev:'CRITICAL',cve:'CWE-89',desc:'Product ID parameter vulnerable to UNION-based SQL injection on /product.'},
+        {name:'CSRF Token Missing',sev:'HIGH',cve:'CWE-352',desc:'No CSRF token on checkout and profile update forms.'},
+        {name:'TLS 1.0 Active',sev:'MEDIUM',cve:'CVE-2011-3389',desc:'Legacy TLS 1.0 enabled -- BEAST attack vector present.'},
+        {name:'Dark Pattern: Roach Motel',sev:'HIGH',cve:'UX-001',desc:'Subscription cancellation buried 5 redirects deep.'},
+      ],
+      os:'Linux 5.4 (Ubuntu 20.04)',
+      intel:'INJECT XSS IN SEARCH FIELD: document.location POINTING TO ATTACKER SERVER WITH document.cookie APPENDED'
+    }
+  }
+];
+
+// ================================================
+// NAVIGATION
+// ================================================
+function nav(id, el) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+// ================================================
+// API TOGGLE
+// ================================================
+function toggleApi() {
+  G.live = !G.live;
+  document.getElementById('api-tog').classList.toggle('on',G.live);
+  document.getElementById('api-dot').classList.toggle('live',G.live);
+  document.getElementById('api-lbl').textContent = G.live ? 'LIVE API' : 'SIM MODE';
+  notif(G.live ? '// LIVE API ENABLED -- ENSURE FLASK IS RUNNING' : '// SIMULATION MODE ACTIVE', G.live?'warn':'');
+}
+
+// ================================================
+// QUICK SCAN
+// ================================================
+function quickScan() {
+  const t = document.getElementById('dash-url').value.trim();
+  if(!t){notif('// ENTER A TARGET','err');return;}
+  document.getElementById('scan-url').value = t;
+  nav('scanner', document.querySelectorAll('.nav-link')[1]);
+  setTimeout(runScan,80);
+}
+
+// ================================================
+// MAIN SCAN
+// ================================================
+async function runScan() {
+  if(G.scanning) return;
+  const tgt = document.getElementById('scan-url').value.trim();
+  if(!tgt){notif('// ENTER A TARGET','err');return;}
+  G.scanning = true;
+  const btn = document.getElementById('scan-btn');
+  btn.disabled=true; btn.textContent='SCANNING...';
+  const opts = {
+    ports:document.getElementById('sc-ports').checked,
+    vulns:document.getElementById('sc-vulns').checked,
+    os:document.getElementById('sc-os').checked,
+    banner:document.getElementById('sc-banner').checked
+  };
+  clearT('scan-out');
+  tlog('scan-out',`// TARGET: ${tgt}`,'ok');
+  tlog('scan-out',`// MODE: ${G.live?'LIVE API':'SIMULATION'}`,'info');
+  showProg(true);
+  G.live ? await liveScan(tgt,opts) : await simScan(tgt,opts);
+  btn.disabled=false; btn.textContent='LAUNCH SCAN';
+  G.scanning=false; showProg(false); refreshStats();
+}
+
+async function simScan(tgt,opts) {
+  const ds = CH[Math.floor(Math.random()*CH.length)].sim;
+  await setStep('ps-init'); tlog('scan-out',`// Resolving ${tgt}...`,'info'); await sl(500);
+  tlog('scan-out',`// Host UP -- ${(Math.random()*4+0.5).toFixed(1)}ms latency`,'ok');
+  await setStep('ps-recon'); tlog('scan-out','// Starting recon...','info'); await sl(400);
+  if(opts.os) tlog('scan-out',`// OS Guess: ${ds.os}`,'warn');
+  if(opts.ports){
+    await setStep('ps-ports');
+    tlog('scan-out','',''); tlog('scan-out','// ---- PORT SCAN (NMAP SYN) ----','ok');
+    await progAnim(0,55,2200);
+    for(const p of ds.ports){
+      await sl(70);
+      tlog('scan-out',`  ${p.state==='open'?'[OPEN]':'[----]'} ${String(p.port).padEnd(6)} ${p.service.padEnd(16)} ${p.version}`,p.state==='open'?'data':'port');
+    }
+    renderSidePorts(ds.ports);
+    G.ports.push(...ds.ports.filter(p=>p.state==='open'));
+    updatePortView(ds.ports,ds.os);
+  }
+  if(opts.vulns){
+    await setStep('ps-vulns');
+    tlog('scan-out','',''); tlog('scan-out','// ---- VULNERABILITY ASSESSMENT ----','ok');
+    await progAnim(55,95,2500);
+    for(const v of ds.vulns){
+      await sl(100);
+      tlog('scan-out',`  [${v.sev}] ${v.name} (${v.cve})`,v.sev==='CRITICAL'?'hi':v.sev==='HIGH'?'err':'warn');
+    }
+    renderSideVulns(ds.vulns);
+    G.vulns.push(...ds.vulns.map(v=>({...v,target:tgt})));
+    renderVulnList('all');
+  }
+  await setStep('ps-report'); await progAnim(95,100,300);
+  tlog('scan-out','',''); tlog('scan-out','// Scan complete.','ok');
+  G.scans.push({target:tgt,time:new Date(),vulns:ds.vulns,ports:ds.ports});
+  renderRecent(); renderDb();
+  notif(`// SCAN COMPLETE -- ${ds.vulns.length} VULNERABILITIES FOUND`,'ok');
+}
+
+async function liveScan(tgt,opts) {
+  tlog('scan-out',`// Connecting to XPLOIT API at ${G.apiUrl}...`,'info');
+  try {
+    const r = await fetch(`${G.apiUrl}/scan`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:tgt,options:opts})});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d = await r.json();
+    tlog('scan-out','// API response received.','ok');
+    if(d.ports){tlog('scan-out','// PORT RESULTS','ok'); d.ports.forEach(p=>tlog('scan-out',`  [${p.state.toUpperCase()}] ${p.port} ${p.service} ${p.version||''}`,p.state==='open'?'data':'port')); renderSidePorts(d.ports); G.ports.push(...d.ports.filter(p=>p.state==='open'));}
+    if(d.vulns){tlog('scan-out','// VULNERABILITIES','ok'); d.vulns.forEach(v=>tlog('scan-out',`  [${v.sev}] ${v.name}`,'hi')); renderSideVulns(d.vulns); G.vulns.push(...d.vulns.map(v=>({...v,target:tgt}))); renderVulnList('all');}
+    if(d.os) tlog('scan-out',`// OS: ${d.os}`,'warn');
+    G.scans.push({target:tgt,time:new Date(),vulns:d.vulns||[],ports:d.ports||[]});
+    renderRecent(); renderDb();
+    notif('// LIVE SCAN COMPLETE','ok');
+  } catch(e) {
+    tlog('scan-out',`// API ERROR: ${e.message}`,'hi');
+    tlog('scan-out','// Ensure Flask backend is running with CORS enabled.','warn');
+    tlog('scan-out','// Falling back to simulation...','info');
+    await simScan(tgt,opts);
+  }
+}
+
+// ================================================
+// CTF
+// ================================================
+function selCh(idx) {
+  G.activeCh=idx;
+  document.querySelectorAll('.ch-item').forEach((c,i)=>c.classList.toggle('active',i===idx));
+  const ch=CH[idx];
+  document.getElementById('ctf-tgt').textContent=ch.target;
+  document.getElementById('ctf-hint').textContent=ch.hint;
+  tlog('ctf-out',`// CHALLENGE: ${ch.name} | TARGET: ${ch.target} | ${ch.pts} PTS`,'ok');
+}
+
+async function launchCtf() {
+  if(G.scanning) return;
+  G.scanning=true;
+  const btn=document.getElementById('ctf-launch');
+  btn.disabled=true; btn.textContent='SCANNING...';
+  const ch=CH[G.activeCh];
+  tlog('ctf-out','','');
+  tlog('ctf-out',`// XPLOIT TARGETING ${ch.target}`,'ok');
+  await sl(350);
+  if(G.live){
+    tlog('ctf-out',`// Connecting to API at ${G.apiUrl}...`,'info');
+    try{
+      const r=await fetch(`${G.apiUrl}/scan`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:ch.target,options:{ports:true,vulns:true}})});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      tlog('ctf-out','// API connected.','ok');
+      if(d.ports) d.ports.forEach(p=>tlog('ctf-out',`  [${p.state.toUpperCase()}] ${p.port} ${p.service}`,p.state==='open'?'data':'port'));
+      if(d.vulns) d.vulns.forEach(v=>tlog('ctf-out',`  [${v.sev}] ${v.name}`,'hi'));
+      G.ctfLastScan=d;
+    }catch(e){
+      tlog('ctf-out',`// API ERROR: ${e.message} -- falling back to simulation`,'hi');
+      await ctfSim(ch);
+    }
+  } else { await ctfSim(ch); }
+  document.getElementById('ctf-vulns').textContent=ch.sim.vulns.length;
+  btn.disabled=false; btn.textContent='LAUNCH XPLOIT'; G.scanning=false;
+}
+
+async function ctfSim(ch) {
+  G.ctfLastScan=ch.sim;
+  tlog('ctf-out',`// HOST UP -- ${ch.target}`,'ok'); await sl(300);
+  tlog('ctf-out','',''); tlog('ctf-out','// ---- PORT SCAN ----','ok'); await sl(600);
+  for(const p of ch.sim.ports){await sl(65); tlog('ctf-out',`  ${p.state==='open'?'[OPEN]':'[----]'} ${String(p.port).padEnd(6)} ${p.service.padEnd(14)} ${p.version}`,p.state==='open'?'data':'port');}
+  tlog('ctf-out','',''); tlog('ctf-out','// ---- VULNERABILITY ASSESSMENT ----','ok'); await sl(700);
+  for(const v of ch.sim.vulns){await sl(90); tlog('ctf-out',`  [${v.sev}] ${v.name} (${v.cve})`,v.sev==='CRITICAL'?'hi':v.sev==='HIGH'?'err':'warn');}
+  tlog('ctf-out','','');
+  tlog('ctf-out',`// INTEL: ${ch.sim.intel}`,'warn');
+  tlog('ctf-out','// Submit the flag below when ready.','info');
+}
+
+function subFlag() {
+  const inp=document.getElementById('flag-inp');
+  const flag=inp.value.trim(); const ch=CH[G.activeCh];
+  if(!flag) return;
+  tlog('ctf-out',`// SUBMITTING: ${flag}`,'info');
+  if(flag===ch.flag){
+    if(G.ctfSolved.has(G.activeCh)){tlog('ctf-out','// Already solved.','warn');return;}
+    G.ctfSolved.add(G.activeCh); G.ctfScore+=ch.pts; G.ctfFlags++;
+    tlog('ctf-out','','');
+    tlog('ctf-out','// *** FLAG ACCEPTED ***','ok');
+    tlog('ctf-out',`// +${ch.pts} PTS AWARDED -- TOTAL: ${G.ctfScore}`,'ok');
+    document.getElementById('ctf-score').textContent=G.ctfScore;
+    document.getElementById('ctf-flags').textContent=`${G.ctfFlags}/3`;
+    document.getElementById('ctf-prog').textContent=`${G.ctfFlags} / 3`;
+    document.getElementById('s-ctf').textContent=G.ctfScore;
+    const card=document.getElementById('ch-'+G.activeCh);
+    card.classList.add('solved');
+    card.querySelector('.ch-meta').innerHTML=`<span class="diff d-e">SOLVED</span><span class="ch-solved-lbl">+${ch.pts} PTS</span>`;
+    scorePop(`+${ch.pts}`); notif(`// FLAG CAPTURED -- +${ch.pts} PTS`,'ok');
+    if(G.ctfFlags===3){
+      setTimeout(()=>{
+        tlog('ctf-out','','');
+        tlog('ctf-out','// ALL FLAGS CAPTURED -- SIMULATION COMPLETE','ok');
+        tlog('ctf-out',`// FINAL SCORE: ${G.ctfScore}/850 PTS | OPERATOR RATING: ELITE`,'ok');
+      },500);
+    }
+  } else {
+    tlog('ctf-out','// INCORRECT FLAG. TRY AGAIN.','hi');
+    tlog('ctf-out',`// HINT: ${ch.hint}`,'warn');
+    notif('// INCORRECT FLAG','err');
+  }
+  inp.value='';
+}
+
+function execCtfCmd() {
+  const inp=document.getElementById('ctf-cmd');
+  const cmd=inp.value.trim().toLowerCase(); if(!cmd) return;
+  inp.value='';
+  tlog('ctf-out',`operator@xploit:~$ ${cmd}`,'w');
+  const p=cmd.split(' ');
+  const cmds={
+    help:()=>['help','clear','hint','score','vulns','ports','challenges','flag <value>'].forEach(c=>tlog('ctf-out','  '+c,'info')),
+    clear:()=>clearT('ctf-out'),
+    hint:()=>tlog('ctf-out','// '+CH[G.activeCh].hint,'warn'),
+    score:()=>tlog('ctf-out',`// SCORE: ${G.ctfScore} PTS | FLAGS: ${G.ctfFlags}/3`,'ok'),
+    vulns:()=>{if(!G.ctfLastScan){tlog('ctf-out','// No scan yet.','warn');return;}(G.ctfLastScan.vulns||[]).forEach(v=>tlog('ctf-out',`  [${v.sev}] ${v.name}`,v.sev==='CRITICAL'?'hi':'err'));},
+    ports:()=>{if(!G.ctfLastScan){tlog('ctf-out','// No scan yet.','warn');return;}(G.ctfLastScan.ports||[]).forEach(pp=>tlog('ctf-out',`  ${pp.port} ${pp.state} ${pp.service}`,pp.state==='open'?'data':'port'));},
+    challenges:()=>CH.forEach((c,i)=>tlog('ctf-out',`  [${i}] ${c.name} (${c.pts}pts) ${G.ctfSolved.has(i)?'[SOLVED]':''}`,'')),
+    flag:()=>{if(p[1]){document.getElementById('flag-inp').value=p.slice(1).join(' ');subFlag();}else tlog('ctf-out','// Usage: flag XPLOIT{...}','warn');},
+  };
+  const h=cmds[p[0]]; if(h)h(); else tlog('ctf-out',`// Unknown: ${cmd}`,'hi');
+}
+
+// ================================================
+// CONSOLE
+// ================================================
+const cH=[]; let cHi=-1;
+function consKey(e){
+  if(e.key==='Enter') execCons();
+  if(e.key==='ArrowUp'){cHi=Math.min(cHi+1,cH.length-1);if(cH[cHi]) document.getElementById('cons-inp').value=cH[cHi];}
+  if(e.key==='ArrowDown'){cHi=Math.max(cHi-1,-1);document.getElementById('cons-inp').value=cHi>=0?cH[cHi]:'';}
+}
+function execCons(){
+  const inp=document.getElementById('cons-inp');
+  const cmd=inp.value.trim(); if(!cmd) return;
+  cH.unshift(cmd); cHi=-1; inp.value='';
+  tlog('cons-out',`operator@xploit:~$ ${cmd}`,'ok');
+  const p=cmd.toLowerCase().split(' ');
+  const cmds={
+    help:()=>['help','clear','whoami','score','status','challenges','scan <target>'].forEach(c=>tlog('cons-out','  '+c,'info')),
+    clear:()=>clearT('cons-out'),
+    whoami:()=>tlog('cons-out','// Anubhav Rajput | XPLOIT | IILM University | New Delhi, IN','ok'),
+    score:()=>tlog('cons-out',`// CTF: ${G.ctfScore} pts | Flags: ${G.ctfFlags}/3 | Vulns found: ${G.vulns.length}`,'ok'),
+    status:()=>tlog('cons-out',`// Mode: ${G.live?'LIVE':'SIM'} | Scans: ${G.scans.length} | Vulns: ${G.vulns.length} | Ports: ${G.ports.length}`,'ok'),
+    challenges:()=>CH.forEach((c,i)=>tlog('cons-out',`  [${i}] ${c.name} (${c.pts}pts) ${G.ctfSolved.has(i)?'[SOLVED]':''}`,'')),
+    scan:()=>{if(p[1]){document.getElementById('scan-url').value=p[1];nav('scanner',document.querySelectorAll('.nav-link')[1]);setTimeout(runScan,80);}else tlog('cons-out','// Usage: scan <target>','warn');},
+  };
+  const h=cmds[p[0]]; if(h)h(); else tlog('cons-out',`// Not found: ${cmd}. Type 'help'.`,'hi');
+}
+
+// ================================================
+// RENDER HELPERS
+// ================================================
+function renderSidePorts(ports){
+  document.getElementById('port-count').textContent=ports.filter(p=>p.state==='open').length;
+  document.getElementById('sc-ports-list').innerHTML=`<table class="port-tbl"><thead><tr><th>PORT</th><th>STATE</th><th>SVC</th></tr></thead><tbody>${ports.map(p=>`<tr><td class="${p.state==='open'?'p-open':'p-closed'}">${p.port}</td><td class="${p.state==='open'?'p-open':'p-closed'}">${p.state}</td><td class="p-svc">${p.service}</td></tr>`).join('')}</tbody></table>`;
+}
+function renderSideVulns(vulns){
+  document.getElementById('vuln-count').textContent=vulns.length;
+  const cls={CRITICAL:'crit',HIGH:'high',MEDIUM:'med',LOW:'low'};
+  const sc2={CRITICAL:'sc-crit',HIGH:'sc-high',MEDIUM:'sc-med',LOW:'sc-low'};
+  document.getElementById('sc-vulns-list').innerHTML=vulns.map(v=>`<div class="vc ${cls[v.sev]||'low'}"><div class="vc-name">${v.name}</div><div class="vc-row"><span class="vc-sev ${sc2[v.sev]||'sc-low'}">${v.sev}</span><span class="vc-cve">${v.cve}</span></div></div>`).join('');
+}
+function renderVulnList(sev){
+  const el=document.getElementById('vuln-list');
+  const list=sev==='all'?G.vulns:G.vulns.filter(v=>v.sev===sev);
+  if(!list.length){el.innerHTML='<div class="empty-msg">// NO VULNERABILITIES FOR THIS FILTER.</div>';return;}
+  const sb={CRITICAL:'vb-crit',HIGH:'vb-high',MEDIUM:'vb-med',LOW:'vb-low'};
+  const sf={CRITICAL:'vfs-crit',HIGH:'vfs-high',MEDIUM:'vfs-med',LOW:'vfs-low'};
+  el.innerHTML=list.map(v=>`<div class="vf-item"><div class="vf-bar ${sb[v.sev]||'vb-low'}"></div><div style="flex:1"><div class="vf-name">${v.name}</div><div class="vf-desc">${v.desc}</div><div class="vf-meta"><span class="vf-sev ${sf[v.sev]||'vfs-low'}">${v.sev}</span>${v.cve?`<span style="font-family:var(--mono);font-size:9px;color:var(--cream-muted)">${v.cve}</span>`:''}<span class="vf-tgt">${v.target||''}</span></div></div></div>`).join('');
+}
+function filterV(sev,btn){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderVulnList(sev);
+}
+function renderRecent(){
+  const el=document.getElementById('recent-list');
+  if(!G.scans.length){el.innerHTML='<div class="empty-msg">// NO RECENT SCANS FOUND</div>';return;}
+  const topSev=s=>{const v=s.vulns;return v.some(x=>x.sev==='CRITICAL')?'CRITICAL':v.some(x=>x.sev==='HIGH')?'HIGH':v.some(x=>x.sev==='MEDIUM')?'MEDIUM':'LOW';};
+  const sc2={'CRITICAL':'st-crit','HIGH':'st-high','MEDIUM':'st-med','LOW':'st-low'};
+  el.innerHTML=[...G.scans].reverse().slice(0,8).map((s,i)=>`<div class="scan-row"><div class="scan-num">${String(i+1).padStart(2,'0')}</div><div class="scan-tgt">${s.target}</div><span class="sev-tag ${sc2[topSev(s)]}">${topSev(s)}</span><div class="scan-time">${s.time.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
+}
+function renderDb(){
+  document.getElementById('db-tag').textContent=G.scans.length+' RECORDS';
+  const el=document.getElementById('db-list');
+  if(!G.scans.length){el.innerHTML='<div class="empty-msg">// NO SCAN RECORDS.</div>';return;}
+  const sc2={'CRITICAL':'st-crit','HIGH':'st-high','MEDIUM':'st-med','LOW':'st-low'};
+  const topSev=s=>{const v=s.vulns;return v.some(x=>x.sev==='CRITICAL')?'CRITICAL':v.some(x=>x.sev==='HIGH')?'HIGH':v.some(x=>x.sev==='MEDIUM')?'MEDIUM':'LOW';};
+  el.innerHTML=[...G.scans].reverse().map((s,i)=>`<div class="scan-row"><div class="scan-num">${String(i+1).padStart(2,'0')}</div><div class="scan-tgt">${s.target}</div><span style="font-family:var(--mono);font-size:10px;color:var(--cream-muted);letter-spacing:1px">${s.ports.length} ports &bull; ${s.vulns.length} vulns</span><span class="sev-tag ${sc2[topSev(s)]}">${topSev(s)}</span><div class="scan-time">${s.time.toLocaleDateString()} ${s.time.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
+}
+function updatePortView(ports,os){
+  const open=ports.filter(p=>p.state==='open');
+  document.getElementById('ps-tot').textContent=ports.length;
+  document.getElementById('ps-open').textContent=open.length;
+  document.getElementById('ps-closed').textContent=ports.length-open.length;
+  document.getElementById('ps-os').textContent=os||'--';
+  document.getElementById('port-tag').textContent=open.length+' PORTS FOUND';
+  document.getElementById('port-tbody').innerHTML=ports.map(p=>`<tr><td class="${p.state==='open'?'p-open':'p-closed'}">${p.port}/tcp</td><td class="${p.state==='open'?'p-open':'p-closed'}">${p.state.toUpperCase()}</td><td class="p-svc">${p.service}</td><td style="color:var(--cream-muted)">${p.version||'--'}</td></tr>`).join('');
+}
+function refreshStats(){
+  document.getElementById('s-scans').textContent=G.scans.length;
+  document.getElementById('s-vulns').textContent=G.vulns.length;
+  document.getElementById('s-ports').textContent=G.ports.length;
+}
+function portOnly(){
+  const t=document.getElementById('port-url').value.trim();
+  if(!t){notif('// ENTER A TARGET','err');return;}
+  document.getElementById('scan-url').value=t;
+  document.getElementById('sc-ports').checked=true;
+  document.getElementById('sc-vulns').checked=false;
+  nav('scanner',document.querySelectorAll('.nav-link')[1]);
+  setTimeout(runScan,80);
+}
+
+// ================================================
+// TERMINAL
+// ================================================
+function tlog(id,text,type=''){
+  const el=document.getElementById(id);
+  const s=document.createElement('span');
+  s.className='tl'+(type?' tl-'+type:'');
+  s.textContent=text;
+  el.appendChild(s);
+  el.scrollTop=el.scrollHeight;
+}
+function clearT(id){document.getElementById(id).innerHTML='';}
+
+// ================================================
+// PROGRESS
+// ================================================
+const STEPS=['ps-init','ps-recon','ps-ports','ps-vulns','ps-report'];
+function showProg(show){
+  document.getElementById('prog-panel').style.display=show?'block':'none';
+  if(!show){STEPS.forEach(s=>{const el=document.getElementById(s);el.classList.remove('done','run');});document.getElementById('prog-fill').style.width='0%';document.getElementById('prog-pct').textContent='0%';}
+}
+async function setStep(id){
+  const idx=STEPS.indexOf(id);
+  for(let i=0;i<idx;i++){const el=document.getElementById(STEPS[i]);el.classList.remove('run');el.classList.add('done');}
+  document.getElementById(id).classList.add('run'); await sl(80);
+}
+async function progAnim(from,to,dur){
+  const bar=document.getElementById('prog-fill');
+  const pct=document.getElementById('prog-pct');
+  const start=performance.now();
+  return new Promise(r=>{
+    function f(now){const t=Math.min((now-start)/dur,1);const v=from+(to-from)*t;bar.style.width=v+'%';pct.textContent=Math.round(v)+'%';t<1?requestAnimationFrame(f):r();}
+    requestAnimationFrame(f);
+  });
+}
+
+// ================================================
+// UI HELPERS
+// ================================================
+function notif(msg,type=''){
+  const n=document.createElement('div');
+  n.className='notif'+(type?' '+type:'');
+  n.textContent=msg;
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(),3200);
+}
+function scorePop(txt){
+  const el=document.createElement('div');
+  el.className='score-pop';
+  el.textContent=txt;
+  el.style.cssText=`left:${window.innerWidth/2-30}px;top:${window.innerHeight/2}px`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1600);
+}
+function sl(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// Init
+selCh(0);
+</script>
+</body>
+</html>
