@@ -2,7 +2,7 @@ OPERATOR FILE — Anubhav Rajput Portfolio
 
 > A Call of Duty: Mission Brief themed personal portfolio website built with pure HTML, CSS, and JavaScript. No frameworks. No dependencies. Just one file.
 
-Live Site: [https://juicer-67.vercel.app](https://juicer-67.vercel.app)
+Live Site: 
 
  📸 Theme & Concept
 
