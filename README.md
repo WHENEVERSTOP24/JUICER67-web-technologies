@@ -2,7 +2,7 @@ OPERATOR FILE — Anubhav Rajput Portfolio
 
 > A Call of Duty: Mission Brief themed personal portfolio website built with pure HTML, CSS, and JavaScript. No frameworks. No dependencies. Just one file.
 
-Live Site: xctfv2.netlify.app
+Live Site: [xctfv2.netlify.app](https://xctfv2.netlify.app/)
 
  📸 Theme & Concept
 
